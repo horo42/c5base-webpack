@@ -10,39 +10,22 @@ const glob = require('glob');
 const fs = require('fs');
 const chalk = require('chalk');
 
-const rootPath = '../../';
-
 /******************************
  *
  * CONFIGURATION
  *
  */
 
-const ignoredFiles = [ '.gitignore', '.DS_Store', '.gitkeep' ];
+const configFilename = 'c5base.config.js';
 
-const enableTypescript = false;
-const enableVue = false;
-const enableNotifications = true;
-const sourcemapsInProduction = true;
-const alwaysBuildFromPackages = false;
+const configPath = '../../' + configFilename;
+if (!fs.existsSync(path.resolve(__dirname, configPath))) {
+    console.error(chalk.bold.yellow('No webpack.config.js file found in project root, creating default config...'));
+    fs.copyFileSync(path.resolve(__dirname, 'default.config.js'), path.resolve(__dirname, configPath));
+}
 
-const providePlugins = {
-    $: 'jquery',
-    jQuery: 'jquery',
-    'window.jQuery': 'jquery',
-    'Popper': 'popper.js',
-    Vue: 'vue',
-};
-
-const browserSyncProxy = 'app.dev';
-const browserSyncWatch = [
-    rootPath + 'packages/**/*',
-    rootPath + 'application/**/*',
-];
-
-const sassIncludePaths = [
-    // path.resolve(rootPath + themePath + '/assets/stylesheets/_defaults'),
-];
+require(configPath);
+const buildConfig = require('./index.js');
 
 /******************************
  *
@@ -53,7 +36,7 @@ const sassIncludePaths = [
 const isProduction = process.env.NODE_ENV === 'production' || process.argv.includes('-p');
 const isHMR = process.argv.includes('--hot');
 const isWatch = process.argv.includes('--watch');
-const devtool = isProduction ? (sourcemapsInProduction ? 'cheap-source-map' : false) : 'inline-source-map';
+const devtool = isProduction ? (buildConfig.sourcemapsInProduction ? 'cheap-source-map' : false) : 'inline-source-map';
 let extensions = [ '*', '.js', '.json' ];
 let plugins = [];
 let rules = [];
@@ -61,7 +44,7 @@ let sassExcludes = [];
 
 const pkgArg = argv.env && argv.env.package;
 const themeArg = argv.env && argv.env.theme;
-let themesPath = path.resolve(__dirname, rootPath, 'application/themes');
+let themesPath = path.resolve(__dirname, buildConfig.rootPath, 'application/themes');
 let themes = [];
 let entryPoints = {};
 
@@ -96,7 +79,7 @@ const extractSASS = new ExtractTextPlugin({
     disable: isHMR,
 });
 
-const providePlugin = new webpack.ProvidePlugin(providePlugins);
+const providePlugin = new webpack.ProvidePlugin(buildConfig.providePlugins);
 
 plugins.push(definePlugin, errorsPlugin, extractCSS, extractSASS, providePlugin);
 
@@ -128,7 +111,7 @@ if (isWatch) {
     plugins.push(browserSyncPlugin);
 }
 
-if (enableNotifications) {
+if (buildConfig.enableNotifications) {
     let WebpackNotifierPlugin = require('webpack-notifier');
 
     plugins.push(new WebpackNotifierPlugin({
@@ -209,7 +192,7 @@ const cssLoader = {
 const sassLoader = extraIncludePaths => ({
     loader: 'sass-loader',
     options: {
-        includePaths: sassIncludePaths.concat(extraIncludePaths || []),
+        includePaths: buildConfig.sassIncludePaths.concat(extraIncludePaths || []),
         sourceMap: !!devtool,
         outputStyle: isProduction ? 'compressed' : 'nested',
     },
@@ -279,7 +262,7 @@ rules.push({
  *
  */
 
-if (enableVue) {
+if (buildConfig.enableVue) {
     const extractVUE = new ExtractTextPlugin({
         filename: '[name].css',
         allChunks: true,
@@ -326,7 +309,7 @@ if (enableVue) {
  *
  */
 
-if (enableTypescript) {
+if (buildConfig.enableTypescript) {
     const tsLoader = {
         loader: 'ts-loader',
         exclude: /node_modules/i,
@@ -353,13 +336,13 @@ if (enableTypescript) {
 
 // PACKAGES
 
-let packageAssetsPath = rootPath + 'packages/*/src/Resources/assets/index.js';
-if (isProduction && !alwaysBuildFromPackages) {
-    packageAssetsPath = rootPath + 'application/assets/packages/*/index.js';
+let packageAssetsPath = buildConfig.rootPath + 'packages/*/src/Resources/assets/index.js';
+if (isProduction && !buildConfig.alwaysBuildFromPackages) {
+    packageAssetsPath = buildConfig.rootPath + 'application/assets/packages/*/index.js';
 }
 
 // TODO: remove
-packageAssetsPath = rootPath + 'application/assets/packages/*/index.js';
+packageAssetsPath = buildConfig.rootPath + 'application/assets/packages/*/index.js';
 
 const packageAssets = glob.sync(path.resolve(__dirname, packageAssetsPath)).map(path => ({
     name: path.match(packageAssetsPath.replace('*', '([^/]+)'))[1],
@@ -368,7 +351,7 @@ const packageAssets = glob.sync(path.resolve(__dirname, packageAssetsPath)).map(
 
 // THEMES
 
-let testPkgPath = path.resolve(__dirname, rootPath, `packages/${pkgArg}/themes`);
+let testPkgPath = path.resolve(__dirname, buildConfig.rootPath, `packages/${pkgArg}/themes`);
 if (pkgArg && fs.existsSync(testPkgPath)) {
     themesPath = testPkgPath;
     console.error(chalk.bold.green(`Using ${themesPath} package path`));
@@ -376,7 +359,7 @@ if (pkgArg && fs.existsSync(testPkgPath)) {
     console.error(chalk.bold.yellow(`Using default ${themesPath} package path`));
 }
 
-let testThemePath = path.resolve(__dirname, rootPath, themesPath + '/' + themeArg);
+let testThemePath = path.resolve(__dirname, buildConfig.rootPath, themesPath + '/' + themeArg);
 if (themeArg && fs.existsSync(testThemePath)) {
     themes = [ testThemePath ];
 }
@@ -389,7 +372,7 @@ if (!themes.length) {
 
     const themeDirs = fs.readdirSync(themesPath);
     themes = themeDirs
-        .filter(entry => !ignoredFiles.includes(entry))
+        .filter(entry => !buildConfig.ignoredFiles.includes(entry))
         .map(entry => ({ name: entry, path: themesPath + '/' + entry }));
 
     if (!themes.length) {
@@ -420,11 +403,11 @@ for (let theme of themes) {
  *
  */
 
-const config = {
-    context: path.resolve(__dirname, rootPath),
+const webpackConfig = {
+    context: path.resolve(__dirname, buildConfig.rootPath),
     entry: entryPoints,
     output: {
-        path: path.resolve(__dirname, rootPath, 'application/assets'),
+        path: path.resolve(__dirname, buildConfig.rootPath, 'application/assets'),
         filename: '[name].js',
         chunkFilename: '[name].js',
         publicPath: '',
@@ -459,10 +442,10 @@ const config = {
     resolve: {
         extensions,
         alias: {
-            'Packages': path.resolve(__dirname, rootPath, 'packages/'),
-            // 'SpecificImport$': path.resolve(__dirname, rootPath, 'packages/specific-file.js'),
+            'Packages': path.resolve(__dirname, buildConfig.rootPath, 'packages/'),
+            // 'SpecificImport$': path.resolve(__dirname, buildConfig.rootPath, 'packages/specific-file.js'),
         },
     },
 };
 
-module.exports = config;
+module.exports = webpackConfig;
