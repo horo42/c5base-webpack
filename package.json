@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "postinstall": "node ./node_modules/c5base-webpack/install.js",
+    "postinstall": "node ./install.js",
     "dev": "cross-env NODE_ENV=development node_modules/webpack/bin/webpack.js --progress",
     "prod": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --hide-modules",
     "watch": "cross-env NODE_ENV=production node_modules/webpack/bin/webpack.js --progress --watch --hide-modules",
