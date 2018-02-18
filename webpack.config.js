@@ -417,6 +417,7 @@ for (let theme of themes) {
  */
 
 const config = {
+    context: path.resolve(__dirname, rootPath),
     entry: entryPoints,
     output: {
         path: path.resolve(__dirname, rootPath, 'application/assets'),
