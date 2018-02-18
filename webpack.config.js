@@ -10,13 +10,15 @@ const glob = require('glob');
 const fs = require('fs');
 const chalk = require('chalk');
 
+const rootPath = '../../';
+
 /******************************
  *
  * CONFIGURATION
  *
  */
 
-const ignoredFiles = [ '.gitignore', '.DS_Store' ];
+const ignoredFiles = [ '.gitignore', '.DS_Store', '.gitkeep' ];
 
 const enableTypescript = false;
 const enableVue = false;
@@ -34,12 +36,12 @@ const providePlugins = {
 
 const browserSyncProxy = 'app.dev';
 const browserSyncWatch = [
-    'packages/**/*',
-    'application/**/*',
+    rootPath + 'packages/**/*',
+    rootPath + 'application/**/*',
 ];
 
 const sassIncludePaths = [
-    // path.resolve(themePath + '/assets/stylesheets/_defaults'),
+    // path.resolve(rootPath + themePath + '/assets/stylesheets/_defaults'),
 ];
 
 /******************************
@@ -59,7 +61,7 @@ let sassExcludes = [];
 
 const pkgArg = argv.env && argv.env.package;
 const themeArg = argv.env && argv.env.theme;
-let themesPath = path.resolve(__dirname, 'application/themes');
+let themesPath = path.resolve(__dirname, rootPath, 'application/themes');
 let themes = [];
 let entryPoints = {};
 
@@ -348,13 +350,13 @@ if (enableTypescript) {
 
 // PACKAGES
 
-let packageAssetsPath = 'packages/*/src/Resources/assets/index.js';
+let packageAssetsPath = rootPath + 'packages/*/src/Resources/assets/index.js';
 if (isProduction && !alwaysBuildFromPackages) {
-    packageAssetsPath = 'application/assets/packages/*/index.js';
+    packageAssetsPath = rootPath + 'application/assets/packages/*/index.js';
 }
 
 // TODO: remove
-packageAssetsPath = 'application/assets/packages/*/index.js';
+packageAssetsPath = rootPath + 'application/assets/packages/*/index.js';
 
 const packageAssets = glob.sync(path.resolve(__dirname, packageAssetsPath)).map(path => ({
     name: path.match(packageAssetsPath.replace('*', '([^/]+)'))[1],
@@ -363,7 +365,7 @@ const packageAssets = glob.sync(path.resolve(__dirname, packageAssetsPath)).map(
 
 // THEMES
 
-let testPkgPath = path.resolve(__dirname, `packages/${pkgArg}/themes`);
+let testPkgPath = path.resolve(__dirname, rootPath, `packages/${pkgArg}/themes`);
 if (pkgArg && fs.existsSync(testPkgPath)) {
     themesPath = testPkgPath;
     console.error(chalk.bold.green(`Using ${themesPath} package path`));
@@ -371,7 +373,7 @@ if (pkgArg && fs.existsSync(testPkgPath)) {
     console.error(chalk.bold.yellow(`Using default ${themesPath} package path`));
 }
 
-let testThemePath = path.resolve(__dirname, themesPath + '/' + themeArg);
+let testThemePath = path.resolve(__dirname, rootPath, themesPath + '/' + themeArg);
 if (themeArg && fs.existsSync(testThemePath)) {
     themes = [ testThemePath ];
 }
@@ -385,7 +387,7 @@ if (!themes.length) {
     const themeDirs = fs.readdirSync(themesPath);
     themes = themeDirs
         .filter(entry => !ignoredFiles.includes(entry))
-.map(entry => ({ name: entry, path: themesPath + '/' + entry }));
+        .map(entry => ({ name: entry, path: themesPath + '/' + entry }));
 
     if (!themes.length) {
         console.error(chalk.bold.red(`No themes found in ${themesPath}`));
@@ -418,7 +420,7 @@ for (let theme of themes) {
 const config = {
     entry: entryPoints,
     output: {
-        path: path.resolve(__dirname, 'application/assets'),
+        path: path.resolve(__dirname, rootPath, 'application/assets'),
         filename: '[name].js',
         chunkFilename: '[name].js',
         publicPath: '',
@@ -453,8 +455,8 @@ const config = {
     resolve: {
         extensions,
         alias: {
-            'Packages': path.resolve(__dirname, 'packages/'),
-            // 'SpecificImport$': path.resolve(__dirname, 'packages/specific-file.js'),
+            'Packages': path.resolve(__dirname, rootPath, 'packages/'),
+            // 'SpecificImport$': path.resolve(__dirname, rootPath, 'packages/specific-file.js'),
         },
     },
 };
