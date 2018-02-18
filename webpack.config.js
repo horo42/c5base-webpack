@@ -20,7 +20,7 @@ const configFilename = 'c5base.config.js';
 
 let configPath = '../../' + configFilename;
 if (!fs.existsSync(path.resolve(__dirname, configPath))) {
-    console.error(chalk.bold.yellow('No webpack.config.js file found in project root, using default config...'));
+    console.error(chalk.bold.yellow(`No ${configFilename} file found in project root, using default config...`));
     configPath = './default.config.js';
 }
 
@@ -433,7 +433,7 @@ const webpackConfig = {
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
-        contentBase: '',
+        contentBase: path.resolve(__dirname, buildConfig.rootPath),
         historyApiFallback: true,
         noInfo: true,
         compress: true,
@@ -445,6 +445,9 @@ const webpackConfig = {
             'Packages': path.resolve(__dirname, buildConfig.rootPath, 'packages/'),
             // 'SpecificImport$': path.resolve(__dirname, buildConfig.rootPath, 'packages/specific-file.js'),
         },
+    },
+    resolveLoader: {
+        modules: [ path.resolve(__dirname, 'node_modules'), 'node_modules' ],
     },
 };
 
