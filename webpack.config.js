@@ -178,7 +178,10 @@ if (isProduction) {
 
 const styleLoader = {
     loader: 'style-loader',
-    options: {},
+    options: {
+        hmr: isHMR,
+        sourceMap: !!devtool,
+    },
 };
 
 const postCSSLoader = {
@@ -196,6 +199,7 @@ const postCSSLoader = {
 const cssLoader = {
     loader: 'css-loader',
     options: {
+        minimize: isProduction,
         url: false,
         importLoaders: 1,
         sourceMap: !!devtool,
