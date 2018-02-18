@@ -1,3 +1,3 @@
 const config = require('c5base-webpack');
 
-config.withNotifications();
+config.outputTo('application/assets');
