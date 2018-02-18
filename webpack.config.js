@@ -18,10 +18,10 @@ const chalk = require('chalk');
 
 const configFilename = 'c5base.config.js';
 
-const configPath = '../../' + configFilename;
+let configPath = '../../' + configFilename;
 if (!fs.existsSync(path.resolve(__dirname, configPath))) {
-    console.error(chalk.bold.yellow('No webpack.config.js file found in project root, creating default config...'));
-    fs.copyFileSync(path.resolve(__dirname, 'default.config.js'), path.resolve(__dirname, configPath));
+    console.error(chalk.bold.yellow('No webpack.config.js file found in project root, using default config...'));
+    configPath = './default.config.js';
 }
 
 require(configPath);
