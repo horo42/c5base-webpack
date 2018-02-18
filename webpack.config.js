@@ -258,8 +258,7 @@ rules.push({
     test: /\.s[ac]ss$/i,
     use: extractSASS.extract({
         fallback: styleLoader,
-        // TODO: resolve-url-loader necessary? (smaller bundle size for some reason)
-        use: [ cssLoader, postCSSLoader, 'resolve-url-loader', sassLoader() ],
+        use: [ cssLoader, postCSSLoader, sassLoader() ],
     }),
     exclude: sassExcludes,
 });
@@ -404,7 +403,7 @@ for (let theme of themes) {
         test: new RegExp(theme.path + '.*\.s[ac]ss$'),
         use: extractSASS.extract({
             fallback: styleLoader,
-            use: [ cssLoader, postCSSLoader, 'resolve-url-loader', sassLoader(theme.path + '/assets/stylesheets/_defaults') ],
+            use: [ cssLoader, postCSSLoader, sassLoader(theme.path + '/assets/stylesheets/_defaults') ],
         }),
     });
 
