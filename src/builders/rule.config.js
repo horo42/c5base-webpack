@@ -11,7 +11,7 @@ module.exports = function (loaders, sassExcludes, extractors) {
       test: /\.s[ac]ss$/,
       use: extractors.extractSASS.extract({
         fallback: loaders.styleLoader,
-        use: [ loaders.cssLoader, loaders.postCSSLoader, loaders.sassLoader() ],
+        use: [ loaders.cssLoader, loaders.postCSSLoader, loaders.sassLoader ],
       }),
       exclude: sassExcludes,
     },

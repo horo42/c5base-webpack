@@ -29,14 +29,14 @@ module.exports = function (buildConfig) {
     },
   };
 
-  const sassLoader = extraIncludePaths => ({
+  const sassLoader = {
     loader: 'sass-loader',
     options: {
-      includePaths: buildConfig.sassIncludePaths.concat(extraIncludePaths || []),
+      includePaths: buildConfig.sassIncludePaths,
       sourceMap: !!buildConfig.getDevtool(),
       outputStyle: buildConfig.isProduction() ? 'compressed' : 'nested',
     },
-  });
+  };
 
   const jsLoader = {
     loader: 'babel-loader',

@@ -1,4 +1,5 @@
 const path = require('path');
+const glob = require('glob');
 const argv = require('yargs').argv;
 
 if (global.config) {
@@ -32,9 +33,9 @@ class Config {
       this.rootPath + 'application/**/*',
     ];
 
-    this.sassIncludePaths = [
-      // path.resolve(rootPath + themePath + '/assets/stylesheets/_defaults'),
-    ];
+    this.sassIncludePaths = [];
+    this.additionalCSS = [];
+    this.additionalJS = [];
   }
 
   isProduction() {
@@ -63,42 +64,92 @@ class Config {
 
   ignore(file) {
     this.ignoredFiles.push(file);
+
+    return this;
   }
 
   withTypescript() {
     this.enableTypescript = true;
+
+    return this;
   }
 
   withVue() {
     this.enableVue = true;
+
+    return this;
   }
 
   withNotifications() {
     this.enableNotifications = true;
+
+    return this;
   }
 
   buildFromPackages() {
     this.alwaysBuildFromPackages = true;
+
+    return this;
   }
 
   provide(pluginKey, pluginName) {
     this.providePlugins[pluginKey] = pluginName;
+
+    return this;
   }
 
   bsProxy(host) {
     this.browserSyncProxy = host;
+
+    return this;
   }
 
   bsAddWatch(path) {
     this.browserSyncWatch.push(this.rootPath + path);
+
+    return this;
   }
 
   addSassInclude(path) {
     this.sassIncludePaths.push(path);
+
+    return this;
   }
 
   outputTo(outputPath) {
     this.outputPath = path.resolve(this.rootPath, outputPath);
+
+    return this;
+  }
+
+  addCSS(...files) {
+    if (files.length == 1 && Array.isArray(files[0])) {
+      files = files[0];
+    }
+
+    files = files.reduce((files, path) => {
+      files.push(...glob.sync(path));
+      return files;
+    }, []);
+
+    this.additionalCSS.push(...files);
+
+    return this;
+  }
+
+  addJS(...files) {
+    if (files.length == 1 && Array.isArray(files[0])) {
+      files = files[0];
+    }
+
+    files = files.reduce((files, path) => {
+      files.push(...glob.sync(path));
+      return files;
+    }, []);
+
+    this.additionalJS.push(...files);
+
+    return this;
   }
 }
 
